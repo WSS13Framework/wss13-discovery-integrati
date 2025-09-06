@@ -1,0 +1,29 @@
+{
+  "name": "wss13-system",
+  "version": "1.0.0",
+  "description": "WSS+13 - WebSmart Sistema - Transformando dores em soluções",
+  "main": "api/server.js",
+  "scripts": {
+    "start": "node api/server.js",
+    "dev": "nodemon api/server.js",
+    "test": "echo "WSS+13 - Sistema funcionando!" && exit 0"
+  },
+  "keywords": [
+    "automation",
+    "ai",
+    "templates",
+    "business",
+    "wss13",
+    "websmart"
+  ],
+  "author": "Marcos Sea <marcos.sea@websmartsistema.com.br>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

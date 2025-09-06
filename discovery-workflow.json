@@ -1,0 +1,29 @@
+{
+  "name": "Sistema Descoberta Inteligente WSS+13",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "discovery",
+        "responseMode": "responseNode"
+      },
+      "name": "Webhook - Receber Dor",
+      "type": "n8n-nodes-base.webhook"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "messages": {
+          "messageValues": [
+            {
+              "role": "system",
+              "message": "Você é um consultor da WSS+13 especialista em automação N8N. Analise a dor operacional e faça 3 perguntas específicas para qualificar a necessidade."
+            }
+          ]
+        }
+      },
+      "name": "IA - Analisar Dor",
+      "type": "n8n-nodes-base.openAi"
+    }
+  ]
+}

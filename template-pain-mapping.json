@@ -1,0 +1,29 @@
+{
+  "pain_points": {
+    "planilhas_manuais": {
+      "keywords": ["planilha", "excel", "sheets", "manual", "copiar", "colar"],
+      "templates": [],
+      "category": "spreadsheet_automation"
+    },
+    "crm_desorganizado": {
+      "keywords": ["crm", "clientes", "vendas", "leads", "contatos"],
+      "templates": [],
+      "category": "crm_integration"
+    },
+    "email_manual": {
+      "keywords": ["email", "marketing", "campanha", "newsletter", "follow-up"],
+      "templates": [],
+      "category": "email_automation"
+    },
+    "processos_repetitivos": {
+      "keywords": ["repetitivo", "manual", "automatizar", "processo", "workflow"],
+      "templates": [],
+      "category": "process_automation"
+    },
+    "integracao_sistemas": {
+      "keywords": ["integrar", "conectar", "sincronizar", "api", "webhook"],
+      "templates": [],
+      "category": "system_integration"
+    }
+  }
+}

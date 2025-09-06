@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""
+Test Suite para WSS+13 Discovery Integration API
+"""
+import requests
+import json
+from datetime import datetime
+
+# Configuração
+API_URL = "http://localhost:5001/analyze"
+
+# Cores para output
+class Colors:
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BLUE = '\033[94m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
+
+def test_api(name, data):
+    """Testa um cenário específico"""
+    print(f"\n{Colors.BLUE}{Colors.BOLD}📋 Testando: {name}{Colors.END}")
+    print(f"   Usuário: {data['user_name']}")
+    print(f"   Dor: {data['pain_point']}")
+    
+    try:
+        response = requests.post(API_URL, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            
+            # Mostra template principal recomendado
+            main_template = result['recommended_templates'][0]
+            print(f"\n   {Colors.GREEN}✅ Resposta OK{Colors.END}")
+            print(f"   🎯 Template Principal: {main_template['name']}")
+            print(f"   📊 Score: {main_template['score']}")
+            print(f"   💰 ROI: {main_template['roi_potential']}/10")
+            print(f"   🎓 Complexidade: {main_template['complexity']}")
+            print(f"   📈 Prob. Conversão: {result['trial_configuration']['conversion_probability']*100:.0f}%")
+            
+            # Mostra outros templates
+            print(f"\n   🔄 Alternativas:")
+            for i, t in enumerate(result['recommended_templates'][1:], 2):
+                print(f"      {i}. {t['name']} (Score: {t['score']})")
+            
+            return True
+        else:
+            print(f"   {Colors.RED}❌ Erro: Status {response.status_code}{Colors.END}")
+            return False
+    except Exception as e:
+        print(f"   {Colors.RED}❌ Erro: {str(e)}{Colors.END}")
+        return False
+
+def main():
+    """Executa todos os testes"""
+    print(f"{Colors.BOLD}{'='*60}{Colors.END}")
+    print(f"{Colors.BOLD}🧪 WSS+13 API TEST SUITE{Colors.END}")
+    print(f"{Colors.BOLD}{'='*60}{Colors.END}")
+    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"API URL: {API_URL}")
+    
+    # Cenários de teste
+    test_cases = [
+        {
+            "name": "Automação de Planilhas Excel",
+            "data": {
+                "user_name": "João Silva",
+                "email": "joao@empresa.com",
+                "pain_point": "Gastamos muito tempo copiando dados entre planilhas do Excel e Google Sheets"
+            }
+        },
+        {
+            "name": "Suporte ao Cliente Lento",
+            "data": {
+                "user_name": "Maria Santos",
+                "email": "maria@empresa.com",
+                "pain_point": "Nosso suporte ao cliente é muito lento e precisamos de respostas automáticas"
+            }
+        },
+        {
+            "name": "Integração CRM",
+            "data": {
+                "user_name": "Pedro Costa",
+                "email": "pedro@empresa.com",
+                "pain_point": "Precisamos integrar nosso CRM com outras ferramentas de vendas"
+            }
+        },
+        {
+            "name": "Email Marketing",
+            "data": {
+                "user_name": "Ana Lima",
+                "email": "ana@empresa.com",
+                "pain_point": "Enviamos muitos emails manualmente para campanhas de marketing"
+            }
+        },
+        {
+            "name": "Dashboard Analytics",
+            "data": {
+                "user_name": "Carlos Oliveira",
+                "email": "carlos@empresa.com",
+                "pain_point": "Não temos visualização clara das nossas métricas e KPIs"
+            }
+        },
+        {
+            "name": "Múltiplas Dores",
+            "data": {
+                "user_name": "Fernanda Souza",
+                "email": "fernanda@empresa.com",
+                "pain_point": "Precisamos de dashboard para análise de dados do Excel e integração com CRM"
+            }
+        },
+        {
+            "name": "Dor Genérica",
+            "data": {
+                "user_name": "Roberto Alves",
+                "email": "roberto@empresa.com",
+                "pain_point": "Queremos automatizar processos manuais"
+            }
+        }
+    ]
+    
+    # Executa testes
+    passed = 0
+    failed = 0
+    
+    for test_case in test_cases:
+        if test_api(test_case["name"], test_case["data"]):
+            passed += 1
+        else:
+            failed += 1
+    
+    # Resumo
+    print(f"\n{Colors.BOLD}{'='*60}{Colors.END}")
+    print(f"{Colors.BOLD}📊 RESUMO DOS TESTES{Colors.END}")
+    print(f"{Colors.BOLD}{'='*60}{Colors.END}")
+    print(f"{Colors.GREEN}✅ Passaram: {passed}{Colors.END}")
+    print(f"{Colors.RED}❌ Falharam: {failed}{Colors.END}")
+    
+    if failed == 0:
+        print(f"\n{Colors.GREEN}{Colors.BOLD}🎉 TODOS OS TESTES PASSARAM!{Colors.END}")
+    else:
+        print(f"\n{Colors.YELLOW}{Colors.BOLD}⚠️  Alguns testes falharam{Colors.END}")
+    
+    # Teste de carga
+    print(f"\n{Colors.BOLD}{'='*60}{Colors.END}")
+    print(f"{Colors.BOLD}⚡ TESTE DE CARGA{Colors.END}")
+    print(f"{Colors.BOLD}{'='*60}{Colors.END}")
+    
+    import time
+    start = time.time()
+    requests_count = 100
+    
+    print(f"Enviando {requests_count} requisições...")
+    for i in range(requests_count):
+        requests.post(API_URL, json={
+            "user_name": f"Teste {i}",
+            "email": f"teste{i}@empresa.com",
+            "pain_point": "Teste de carga"
+        })
+    
+    elapsed = time.time() - start
+    rps = requests_count / elapsed
+    
+    print(f"✅ {requests_count} requisições em {elapsed:.2f}s")
+    print(f"📈 Taxa: {rps:.2f} req/s")
+    print(f"⏱️  Tempo médio: {(elapsed/requests_count)*1000:.2f}ms por requisição")
+
+if __name__ == "__main__":
+    try:
+        # Verifica se a API está rodando
+        response = requests.get("http://localhost:5001/")
+        main()
+    except requests.exceptions.ConnectionError:
+        print(f"{Colors.RED}❌ Erro: API não está rodando em {API_URL}{Colors.END}")
+        print(f"{Colors.YELLOW}💡 Execute primeiro: python3 wss13-simple-api.py 5001{Colors.END}")

@@ -1,0 +1,250 @@
+{
+  "name": "WSS+13 Discovery System - Completo",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "user-discovery",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook - Captura Usuário",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "webhook-capture"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5001/analyze",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonParameters": {
+          "parameters": [
+            {
+              "name": "user_name",
+              "value": "={{ $json.body.name }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "name": "pain_point",
+              "value": "={{ $json.body.pain_description }}"
+            },
+            {
+              "name": "company",
+              "value": "={{ $json.body.company || 'Não informado' }}"
+            },
+            {
+              "name": "company_size",
+              "value": "={{ $json.body.company_size || 'pequena' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Analisar com WSS+13 API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [480, 300],
+      "id": "analyze-api"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Processar resposta da API e preparar dados\nconst apiResponse = $json;\n\n// Extrair dados principais\nconst user = apiResponse.user_analysis;\nconst template = apiResponse.trial_configuration;\nconst recommendations = apiResponse.recommended_templates;\n\n// Preparar dados estruturados\nreturn [{\n  json: {\n    // Dados do usuário\n    user_name: user.name,\n    user_email: user.email,\n    pain_point: user.pain_point,\n    \n    // Template recomendado\n    template_id: template.template_id,\n    template_name: template.template_name,\n    trial_days: template.duration_days,\n    executions_limit: template.executions_limit,\n    conversion_probability: template.conversion_probability,\n    \n    // URLs e links\n    download_url: `https://wss13.com.br/download/${template.template_id}`,\n    trial_url: `https://wss13.com.br/trial/${template.template_id}`,\n    dashboard_url: `https://wss13.com.br/dashboard/${template.template_id}`,\n    \n    // Dados para email\n    email_subject: `🎯 Seu Template WSS+13 - ${template.template_name}`,\n    \n    // Score e recomendações\n    top_recommendation: recommendations[0],\n    all_recommendations: recommendations,\n    \n    // Timestamp\n    created_at: new Date().toISOString(),\n    \n    // Resposta original da API\n    api_response: apiResponse\n  }\n}];"
+      },
+      "name": "Processar Dados",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [720, 300],
+      "id": "process-data"
+    },
+    {
+      "parameters": {
+        "authentication": "generic",
+        "genericAuthType": "httpBasicAuth",
+        "url": "https://api.mailgun.net/v3/wss13.com.br/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "WSS+13 Templates <templates@wss13.com.br>"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.user_email }}"
+            },
+            {
+              "name": "subject",
+              "value": "={{ $json.email_subject }}"
+            },
+            {
+              "name": "html",
+              "value": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px}.header{background:#007bff;color:white;padding:20px;text-align:center;border-radius:8px 8px 0 0}.content{background:#f8f9fa;padding:30px;border-radius:0 0 8px 8px}.template-box{background:white;padding:20px;margin:20px 0;border-radius:8px;border-left:4px solid #007bff}.btn{display:inline-block;background:#007bff;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;margin:10px 5px}.trial-info{background:#e7f3ff;padding:15px;border-radius:5px;margin:15px 0}</style></head><body><div class='header'><h1>🎯 Seu Template Personalizado</h1><h2>{{ $json.template_name }}</h2></div><div class='content'><p>Olá <strong>{{ $json.user_name }}</strong>,</p><p>Analisamos sua dor operacional:</p><blockquote><em>"{{ $json.pain_point }}"</em></blockquote><div class='template-box'><h3>🚀 Template Recomendado</h3><h4>{{ $json.template_name }}</h4><p><strong>Score de Compatibilidade:</strong> {{ Math.round($json.top_recommendation.score * 100) }}%</p><p><strong>ROI Potencial:</strong> {{ $json.top_recommendation.roi_potential }}/10</p><p><strong>Complexidade:</strong> {{ $json.top_recommendation.complexity }}</p></div><div class='trial-info'><h3>🧪 Seu Trial Gratuito</h3><ul><li><strong>Duração:</strong> {{ $json.trial_days }} dias</li><li><strong>Execuções incluídas:</strong> {{ $json.executions_limit }}</li><li><strong>Probabilidade de sucesso:</strong> {{ Math.round($json.conversion_probability * 100) }}%</li></ul></div><div style='text-align:center;margin:30px 0'><a href='{{ $json.download_url }}' class='btn'>📥 Download Template</a><a href='{{ $json.trial_url }}' class='btn'>🚀 Iniciar Trial</a></div><p>Qualquer dúvida, responda este email!</p><p><strong>Equipe WSS+13</strong><br>Automação Inteligente</p></div></body></html>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Enviar Email Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [960, 200],
+      "id": "send-email"
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.slack.com/services/SEU/SLACK/WEBHOOK",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "🎯 *Novo Lead Qualificado WSS+13*"
+            },
+            {
+              "name": "blocks",
+              "value": "=[{"type":"section","text":{"type":"mrkdwn","text":"*🎯 Novo Lead Qualificado*\n*Nome:* {{ $json.user_name }}\n*Email:* {{ $json.user_email }}\n*Template:* {{ $json.template_name }}\n*Score:* {{ Math.round($json.conversion_probability * 100) }}%\n*Dor:* {{ $json.pain_point }}"}},{"type":"actions","elements":[{"type":"button","text":{"type":"plain_text","text":"Ver Dashboard"},"url":"{{ $json.dashboard_url }}"},{"type":"button","text":{"type":"plain_text","text":"Contatar Lead"},"url":"mailto:{{ $json.user_email }}"}]}]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Notificar Slack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [960, 400],
+      "id": "notify-slack"
+    },
+    {
+      "parameters": {
+        "url": "https://api.airtable.com/v0/SEU_BASE_ID/Leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer SEU_AIRTABLE_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "={"Nome": "{{ $json.user_name }}", "Email": "{{ $json.user_email }}", "Empresa": "{{ $json.company || 'Não informado' }}", "Template": "{{ $json.template_name }}", "Score": {{ Math.round($json.conversion_probability * 100) }}, "Dor": "{{ $json.pain_point }}", "Status": "Trial Enviado", "Data": "{{ $json.created_at }}", "Trial Expira": "{{ $now.plus({days: $json.trial_days}).toISO() }}"}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Salvar no CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1200, 300],
+      "id": "save-crm"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Template enviado com sucesso!\",\n  \"data\": {\n    \"user\": \"{{ $json.user_name }}\",\n    \"template\": \"{{ $json.template_name }}\",\n    \"trial_days\": \"{{ $json.trial_days }}\",\n    \"conversion_probability\": \"{{ Math.round($json.conversion_probability * 100) }}%\",\n    \"download_url\": \"{{ $json.download_url }}\",\n    \"trial_url\": \"{{ $json.trial_url }}\"\n  }\n}",
+        "options": {}
+      },
+      "name": "Resposta Final",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1440, 300],
+      "id": "final-response"
+    }
+  ],
+  "connections": {
+    "Webhook - Captura Usuário": {
+      "main": [
+        [
+          {
+            "node": "Analisar com WSS+13 API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analisar com WSS+13 API": {
+      "main": [
+        [
+          {
+            "node": "Processar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Dados": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Template",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notificar Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Salvar no CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar no CRM": {
+      "main": [
+        [
+          {
+            "node": "Resposta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "timezone": "America/Sao_Paulo"
+  }
+}

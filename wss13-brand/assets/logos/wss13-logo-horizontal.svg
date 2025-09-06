@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="256" viewBox="0 0 1024 256" role="img" aria-label="WSS+13 - logo horizontal" xmlns="http://www.w3.org/2000/svg">
+  <title>WSS+13 - Logo Horizontal</title>
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#007aff"/>
+      <stop offset="100%" stop-color="#0056cc"/>
+    </linearGradient>
+  </defs>
+  <!-- Ícone quadrado com cantos arredondados -->
+  <rect x="16" y="30" width="196" height="196" rx="28" fill="url(#g1)"/>
+  <!-- Letras dentro do ícone -->
+  <g fill="#ffffff" font-family="-apple-system,system-ui,'Segoe UI',Roboto,Ubuntu,Cantarell,'Noto Sans',sans-serif" font-weight="800" text-anchor="middle">
+    <text x="114" y="120" font-size="70" letter-spacing="3">WSS</text>
+    <text x="114" y="185" font-size="64" letter-spacing="1">+13</text>
+  </g>
+  <!-- Texto do lado direito -->
+  <g font-family="-apple-system,system-ui,'Segoe UI',Roboto,Ubuntu,Cantarell,'Noto Sans',sans-serif" font-weight="800" fill="#111827">
+    <text x="240" y="150" font-size="124" letter-spacing="2">WSS+13</text>
+  </g>
+</svg>

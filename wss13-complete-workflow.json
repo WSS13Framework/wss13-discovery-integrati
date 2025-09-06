@@ -1,0 +1,223 @@
+{
+  "name": "WSS+13 - Sistema Completo de Descoberta",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "user-discovery",
+        "responseMode": "responseNode"
+      },
+      "name": "Webhook - Ficha Usuário",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "webhook-user"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5001/analyze",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_name",
+              "value": "={{ $json.body.name }}"
+            },
+            {
+              "name": "email", 
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "name": "pain_point",
+              "value": "={{ $json.body.pain_description }}"
+            }
+          ]
+        }
+      },
+      "name": "Analisar com WSS+13 API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "id": "analyze-api"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Preparar dados para email\nconst analysis = $json;\nconst template = analysis.trial_configuration;\n\nreturn [{\n  json: {\n    user_name: analysis.user_analysis.name,\n    user_email: analysis.user_analysis.email,\n    template_name: template.template_name,\n    template_id: template.template_id,\n    trial_days: template.duration_days,\n    executions_limit: template.executions_limit,\n    conversion_probability: template.conversion_probability,\n    download_url: `https://wss13.com.br/download/${template.template_id}`,\n    trial_url: `https://wss13.com.br/trial/${template.template_id}`,\n    pain_point: analysis.user_analysis.pain_point\n  }\n}];"
+      },
+      "name": "Preparar Dados Email",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "id": "prepare-email"
+    },
+    {
+      "parameters": {
+        "fromEmail": "templates@wss13.com.br",
+        "toEmail": "={{ $json.user_email }}",
+        "subject": "🎯 Seu Template Personalizado WSS+13 - {{ $json.template_name }}",
+        "message": "Olá {{ $json.user_name }},\n\nAnalisamos sua dor operacional: "{{ $json.pain_point }}"\n\n🎯 TEMPLATE RECOMENDADO:\n{{ $json.template_name }}\n\n🧪 TRIAL GRATUITO:\n• Duração: {{ $json.trial_days }} dias\n• Execuções: {{ $json.executions_limit }}\n• Probabilidade de sucesso: {{ Math.round($json.conversion_probability * 100) }}%\n\n📥 DOWNLOAD:\n{{ $json.download_url }}\n\n🚀 TESTAR AGORA:\n{{ $json.trial_url }}\n\nEquipe WSS+13\nAutomação Inteligente"
+      },
+      "name": "Enviar Email Template",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [900, 200],
+      "id": "send-email"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pushover.net/1/messages.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "SEU_TOKEN_PUSHOVER"
+            },
+            {
+              "name": "user",
+              "value": "SEU_USER_PUSHOVER"
+            },
+            {
+              "name": "message",
+              "value": "🎯 Template {{ $json.template_name }} enviado para {{ $json.user_name }}"
+            },
+            {
+              "name": "title",
+              "value": "WSS+13 - Novo Lead Qualificado"
+            }
+          ]
+        }
+      },
+      "name": "Notificação Push",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [900, 400],
+      "id": "push-notification"
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.zapier.com/hooks/catch/SEU_WEBHOOK_CRM/",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "lead_name",
+              "value": "={{ $json.user_name }}"
+            },
+            {
+              "name": "lead_email",
+              "value": "={{ $json.user_email }}"
+            },
+            {
+              "name": "template_sent",
+              "value": "={{ $json.template_name }}"
+            },
+            {
+              "name": "conversion_probability",
+              "value": "={{ $json.conversion_probability }}"
+            },
+            {
+              "name": "trial_expires",
+              "value": "={{ $now.plus({days: $json.trial_days}).toISO() }}"
+            },
+            {
+              "name": "source",
+              "value": "WSS+13 Discovery"
+            }
+          ]
+        }
+      },
+      "name": "Registrar no CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "id": "crm-register"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  "status": "success",\n  "message": "Template enviado com sucesso!",\n  "template": $node["Preparar Dados Email"].json.template_name,\n  "trial_days": $node["Preparar Dados Email"].json.trial_days,\n  "user": $node["Preparar Dados Email"].json.user_name\n} }}"
+      },
+      "name": "Resposta Final",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "id": "final-response"
+    }
+  ],
+  "connections": {
+    "Webhook - Ficha Usuário": {
+      "main": [
+        [
+          {
+            "node": "Analisar com WSS+13 API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analisar com WSS+13 API": {
+      "main": [
+        [
+          {
+            "node": "Preparar Dados Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Dados Email": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Template",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notificação Push",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar no CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar no CRM": {
+      "main": [
+        [
+          {
+            "node": "Resposta Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

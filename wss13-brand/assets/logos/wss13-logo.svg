@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="WSS+13 - WebSmart Sistema" xmlns="http://www.w3.org/2000/svg">
+  <title>WSS+13 - WebSmart Sistema</title>
+  <desc>Marca quadrada com cantos arredondados, gradiente azul e textos "WSS" em cima e "+13" embaixo.</desc>
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#007aff"/>
+      <stop offset="100%" stop-color="#0056cc"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="64" fill="url(#g1)"/>
+  <g fill="#ffffff" font-family="-apple-system,system-ui,'Segoe UI',Roboto,Ubuntu,Cantarell,'Noto Sans',sans-serif" font-weight="800" text-anchor="middle">
+    <text x="256" y="220" font-size="160" letter-spacing="4">WSS</text>
+    <text x="256" y="380" font-size="140" letter-spacing="2">+13</text>
+  </g>
+</svg>

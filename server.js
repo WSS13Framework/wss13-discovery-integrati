@@ -1,0 +1,177 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+// Templates WSS+13
+const templates = [
+    {
+        id: 1,
+        name: "WhatsApp Business Automation",
+        description: "Automatiza atendimento, qualificação de leads e agendamentos via WhatsApp",
+        category: "comunicacao",
+        roi: "340%",
+        implementation_time: "2 dias",
+        keywords: ["whatsapp", "atendimento", "vendas", "leads", "comunicacao"]
+    },
+    {
+        id: 2,
+        name: "Sistema de Correção de Erros",
+        description: "Detecta e corrige automaticamente erros de digitalização em dados",
+        category: "dados",
+        roi: "300%",
+        implementation_time: "3 dias",
+        keywords: ["erro", "dados", "planilha", "digitacao", "manual"]
+    },
+    {
+        id: 3,
+        name: "CRM Integration Master",
+        description: "Sincroniza dados entre sistemas e elimina trabalho manual",
+        category: "integracao",
+        roi: "280%",
+        implementation_time: "3 dias",
+        keywords: ["crm", "sistema", "integracao", "dados", "manual"]
+    }
+];
+
+// Rota principal
+app.get('/', (req, res) => {
+    const domain = req.get('host');
+    const protocol = req.get('x-forwarded-proto') || 'http';
+    
+    res.send(\`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSS+13 - Sistema Online na Digital Ocean</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .logo { 
+            width: 120px; 
+            height: 120px; 
+            background: rgba(255,255,255,0.2); 
+            border-radius: 24px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        h1 { font-size: 3rem; margin-bottom: 20px; }
+        p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
+        
+        .btn { 
+            background: white; 
+            color: #007aff; 
+            padding: 15px 30px; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        .btn:hover { transform: translateY(-2px); }
+        
+        .domain-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 40px;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <div style="font-size: 24px;">WSS</div>
+        <div style="font-size: 16px; opacity: 0.9;">+13</div>
+    </div>
+    
+    <h1>🌊 WSS+13 Online na Digital Ocean!</h1>
+    <p>WebSmart Sistema - Transformando dores operacionais em soluções automatizadas</p>
+    
+    <div>
+        <a href="/api/status" class="btn">📡 Status da API</a>
+        <a href="/api/templates" class="btn">📋 Ver Templates</a>
+        <a href="https://n8n.ws13.com.br" class="btn">🔧 N8N Workflows</a>
+    </div>
+    
+    <div class="domain-info">
+        <h3>🌐 Informações do Sistema</h3>
+        <p><strong>Domínio:</strong> \${domain}</p>
+        <p><strong>Protocolo:</strong> \${protocol.toUpperCase()}</p>
+        <p><strong>Servidor:</strong> Digital Ocean</p>
+        <p><strong>Status:</strong> ✅ Online e Funcionando</p>
+        <p><strong>Desenvolvedor:</strong> Marcos Sea</p>
+        <p><strong>Templates Disponíveis:</strong> \${templates.length}</p>
+    </div>
+</body>
+</html>
+    \`);
+});
+
+// API de status
+app.get('/api/status', (req, res) => {
+    res.json({
+        status: 'online',
+        service: 'WSS+13 - WebSmart Sistema',
+        version: '1.0.0',
+        developer: 'Marcos Sea',
+        platform: 'Digital Ocean',
+        domain: req.get('host'),
+        timestamp: new Date().toISOString(),
+        templates_available: templates.length,
+        uptime: process.uptime()
+    });
+});
+
+// API de templates
+app.get('/api/templates', (req, res) => {
+    res.json({
+        total: templates.length,
+        templates: templates
+    });
+});
+
+// Health check
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
+// Iniciar servidor
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(\`🌊 WSS+13 rodando na porta \${PORT}\`);
+});
